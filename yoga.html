@@ -110,6 +110,10 @@
               <option value="relax">Relax</option>
             </select>
             <textarea id="poseInfo" placeholder="Short info (one sentence)"></textarea>
+            <input type="file" id="poseImage" accept="image/*" />
+            <div style="display:none">
+              <input type="text" id="poseImageData" />
+            </div>
             <div style="display:flex;gap:8px">
               <button class="big-btn" id="addPoseBtn">Add Pose</button>
               <button class="big-btn gray" id="resetSampleBtn" style="box-shadow:none">Reset Sample Data</button>
@@ -150,4 +154,3 @@
   <script type="text/javascript" src="yoga.js"></script>
 </body>
 </html>
-

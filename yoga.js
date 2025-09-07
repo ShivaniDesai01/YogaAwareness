@@ -48,11 +48,51 @@ const seedPoses = (()=>{
     "Backbend with gentle support.",
     "Nervous system calming fold."
   ];
+  //Images are from Pocket Yoga app by Rainfrog, used under fair use for educational demo purposes only
+  //https://pocketyoga.com/
+  //All rights reserved to Rainfrog LLC
+  const imageUrls = [
+    "https://pocketyoga.com/assets/images/full/LungeCrescent_L.png",
+    "https://pocketyoga.com/assets/images/full/MountainArmsSide.png",
+    "https://pocketyoga.com/assets/images/full/Chair.png",  
+    "https://pocketyoga.com/assets/images/full/ChairTwistBindUp_L.png",
+    "https://pocketyoga.com/assets/images/full/DownwardDog.png",
+    "https://pocketyoga.com/assets/images/full/SeatedForwardBend.png",
+    "https://pocketyoga.com/assets/images/full/HeadstandSupported.png",
+    "https://pocketyoga.com/assets/images/full/BoundAngle.png",
+    "https://pocketyoga.com/assets/images/full/LordOfTheFishes_R.png",
+    "https://pocketyoga.com/assets/images/full/KneePileBind_L.png",
+    "https://pocketyoga.com/assets/images/full/TriangleForward_L.png",
+    "https://pocketyoga.com/assets/images/full/Bridge.png",
+    "https://pocketyoga.com/assets/images/full/Butterfly.png",
+    "https://pocketyoga.com/assets/images/full/Camel.png",
+    "https://pocketyoga.com/assets/images/full/TreePrayer_R.png",
+    "https://pocketyoga.com/assets/images/full/Corpse.png",
+    "https://pocketyoga.com/assets/images/full/GarlandSideways_L.png",
+    "https://pocketyoga.com/assets/images/full/PigeonFlying_L.png",
+    "https://pocketyoga.com/assets/images/full/ForwardBendBigToe.png",
+    "https://pocketyoga.com/assets/images/full/PigeonHalf_L.png",
+    "https://pocketyoga.com/assets/images/full/SeatedForwardBend.png",
+    "https://pocketyoga.com/assets/images/full/CorpseFrontArmsForward.png",
+    "https://pocketyoga.com/assets/images/full/LegsUpTheWallRelax.png",
+    "https://pocketyoga.com/assets/images/full/SupportedBridge.png",
+    "https://pocketyoga.com/assets/images/full/StandingForwardBend.png",
+    "https://pocketyoga.com/assets/images/full/Lunge_L.png",
+    "https://pocketyoga.com/assets/images/full/CatCow.png",
+    "https://pocketyoga.com/assets/images/full/HappyBaby.png",
+    "https://pocketyoga.com/assets/images/full/BoatFull.png",
+    "https://pocketyoga.com/assets/images/full/LowLunge_L.png"
+  ];
+
+  const images = []; //ToDo: add actual images data in base64 encoded format in future version.
+
   return names.map((n,i)=>({
     id: 'p'+(i+1),
     category: i<10 ? 'morning' : (i<20 ? 'stretch' : 'relax'),
     name: n,
-    info: infos[i] || ''
+    info: infos[i] || '',
+    imageUrl: imageUrls[i] || '',
+    imageData: images[i] || ''
   }));
 })();
 
@@ -118,7 +158,18 @@ function addToToday(poseId){
   const today = todayISO();
   DB.completions[today] = DB.completions[today] || {};
   DB.completions[today].sessionList = DB.completions[today].sessionList || [];
-  if(!DB.completions[today].sessionList.includes(poseId)) DB.completions[today].sessionList.push(poseId);
+  if(!DB.completions[today].sessionList.includes(poseId)) 
+  {
+    if (DB.completions[today].sessionList.length == 5) {
+      //add the element at first position and remove the last one
+      DB.completions[today].sessionList.unshift(poseId);
+      DB.completions[today].sessionList.pop();
+    }
+    else
+    {
+      DB.completions[today].sessionList.push(poseId);
+    }
+  }
   saveData();
   alert('Added pose to today’s session');
   renderSession();
@@ -131,15 +182,16 @@ function renderSession(){
     const row = document.createElement('div'); row.className = 'card';
     const checked = DB.completions[todayISO()]?.donePoses?.includes(p.id) ? 'checked' : '';
     row.innerHTML = `
-      <div style="display:flex;justify-content:space-between;align-items:center">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-direction:column;">
         <div>
           <div style="font-weight:700">${p.name}</div>
+          <div style="padding:5px 0;height:200px"><img src="${p.imageUrl}" width="auto" height="200px" alt="image incorrect" /></div>
           <div class="small">${p.info}</div>
         </div>
-        <div style="text-align:center">
-          <label class="small">Done</label><br>
-          <input type="checkbox" class="poseCheck" data-id="${p.id}" ${checked} />
-        </div>
+      </div>
+      <div style="text-align:center">
+        <label class="small">Done</label>
+        <input type="checkbox" class="poseCheck" data-id="${p.id}" ${checked} />
       </div>
     `;
     container.appendChild(row);
@@ -254,8 +306,9 @@ q('#addPoseBtn').onclick = ()=>{
   const cat = q('#poseCategory').value;
   const info = q('#poseInfo').value.trim() || '';
   if(!name){ alert('Give a name'); return; }
+  const img = q('#poseImage').files[0] || null;
   const id = 'p'+(Date.now()%1000000);
-  DB.poses.unshift({id, category: cat, name, info});
+  DB.poses.unshift({id, category: cat, name, info, imgUrl: null, img});
   saveData();
   alert('Pose added');
   renderHome();
