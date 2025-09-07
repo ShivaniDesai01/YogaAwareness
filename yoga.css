@@ -1,0 +1,149 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+const string FILE = "completions.txt";
+map<string, vector<string>> categories;
+map<string, string> completions;
+
+string todayISO() {
+    time_t t = time(nullptr);
+    tm* lt = localtime(&t);
+    char buf[11]; strftime(buf, sizeof(buf), "%Y-%m-%d", lt);
+    return string(buf);
+}
+
+void initData() {
+    categories["Morning"] = {"Sun Salutation", "Tree Pose"};
+    categories["Stretch"] = {"Forward Fold", "Seated Twist"};
+    categories["Relax"] = {"Child's Pose", "Corpse Pose"};
+}
+
+void loadData() {
+    ifstream in(FILE);
+    if(!in) return;
+    string line;
+    while(getline(in, line)) {
+        auto pos = line.find(',');
+        if(pos != string::npos)
+            completions[line.substr(0, pos)] = line.substr(pos + 1);
+    }
+}
+
+void saveData() {
+    ofstream out(FILE);
+    for(auto &p : completions) out << p.first << "," << p.second << "\n";
+}
+
+int currentStreak() {
+    int streak = 0;
+    string date = todayISO();
+    while(completions[date] == "complete") {
+        streak++;
+        tm lt = {};
+        strptime(date.c_str(), "%Y-%m-%d", &lt);
+        lt.tm_mday--;
+        mktime(&lt);
+        char buf[11]; strftime(buf, 11, "%Y-%m-%d", &lt);
+        date = buf;
+    }
+    return streak;
+}
+
+int longestStreak() {
+    vector<string> dates;
+    for(auto &p : completions) if(p.second == "complete") dates.push_back(p.first);
+    sort(dates.begin(), dates.end());
+    int best = 0, cur = 0; string last;
+    for(auto &d : dates) {
+        if(!last.empty()) {
+            tm t1 = {}, t2 = {};
+            strptime(last.c_str(), "%Y-%m-%d", &t1);
+            strptime(d.c_str(), "%Y-%m-%d", &t2);
+            time_t tt1 = mktime(&t1), tt2 = mktime(&t2);
+            if(difftime(tt2, tt1) == 86400) cur++;
+            else cur = 1;
+        } else cur = 1;
+        best = max(best, cur);
+        last = d;
+    }
+    return best;
+}
+
+void browse() {
+    cout << "\nCategories:\n";
+    int i = 1;
+    vector<string> keys;
+    for(auto &p : categories) {
+        cout << i << ") " << p.first << "\n";
+        keys.push_back(p.first);
+        i++;
+    }
+    cout << "Select or 0 to back: ";
+    int choice; cin >> choice; cin.ignore();
+    if(choice > 0 && choice <= keys.size()) {
+        cout << "\n" << keys[choice - 1] << " Poses:\n";
+        for(auto &pose : categories[keys[choice - 1]]) cout << " - " << pose << "\n";
+    }
+}
+
+void session() {
+    string today = todayISO();
+    vector<string> session;
+    for(auto &p : categories) session.insert(session.end(), p.second.begin(), p.second.end());
+    session.resize(min((int)session.size(), 5));
+    set<int> done;
+
+    while(true) {
+        cout << "\nToday's Session (" << today << ")\n";
+        for(int i = 0; i < session.size(); i++) {
+            cout << i + 1 << ") " << session[i] << (done.count(i) ? " [DONE]" : "") << "\n";
+        }
+        cout << "Commands: t<num> toggle, c complete, b back\n> ";
+        string cmd; getline(cin, cmd);
+        if(cmd == "b") return;
+        if(cmd == "c") {
+            int doneCount = done.size();
+            string status = (doneCount == session.size()) ? "complete" :
+                            (doneCount > 0 ? "partial" : "none");
+            completions[today] = status;
+            cout << "Marked today as " << status << "\n";
+            saveData();
+            return;
+        }
+        if(cmd[0] == 't') {
+            int idx = stoi(cmd.substr(1)) - 1;
+            if(idx >= 0 && idx < session.size()) {
+                if(done.count(idx)) { done.erase(idx); cout << "Unchecked\n"; }
+                else { done.insert(idx); cout << "Checked\n"; }
+            }
+        }
+    }
+}
+
+void calendarSummary() {
+    cout << "\nCalendar Summary:\n";
+    cout << "Recorded days: " << completions.size() << "\n";
+    int compl = 0, part = 0;
+    for(auto &p : completions) {
+        if(p.second == "complete") compl++;
+        else if(p.second == "partial") part++;
+    }
+    cout << "Completed: " << compl << "  Partial: " << part << "\n";
+    cout << "Current streak: " << currentStreak() << "\n";
+    cout << "Longest streak: " << longestStreak() << "\n";
+}
+
+int main() {
+    initData(); loadData();
+    cout << "Welcome to SoulSpark (C++)\n";
+    while(true) {
+        cout << "\n1) Browse  2) Daily Session  3) Calendar Summary  4) Exit\n> ";
+        int ch; cin >> ch; cin.ignore();
+        if(ch == 1) browse();
+        else if(ch == 2) session();
+        else if(ch == 3) calendarSummary();
+        else if(ch == 4) { saveData(); cout << "Goodbye!\n"; break; }
+        else cout << "Invalid choice.\n";
+    }
+    return 0;
+}
