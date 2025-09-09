@@ -35,4 +35,5 @@
     .partial{background:linear-gradient(180deg,#fff9ea,#fff4d5)}
     .none{background:var(--surface)}
     .today-badge{font-size:12px;color:var(--accent);font-weight:700}
+    .poseCheck{Width:auto;vertical-align: middle;}
     @media (max-width:520px){ main{padding:12px} .grid{grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); } }

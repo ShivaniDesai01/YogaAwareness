@@ -3,8 +3,9 @@ const q = (s, el=document) => el.querySelector(s);
 const qq = (s, el=document) => Array.from(el.querySelectorAll(s));
 const todayISO = () => (new Date()).toISOString().slice(0,10);
 
+
 /* Seed: 30 poses (no images) */
-const seedPoses = (()=>{
+const seedPoses = (async ()=>{
   const names = [
     // Morning (10)
     "Sun Salutation","Mountain Pose","Chair Pose","Revolved Chair","Downward Dog",
@@ -52,65 +53,73 @@ const seedPoses = (()=>{
   //https://pocketyoga.com/
   //All rights reserved to Rainfrog LLC
   const imageUrls = [
-    "https://pocketyoga.com/assets/images/full/LungeCrescent_L.png",
-    "https://pocketyoga.com/assets/images/full/MountainArmsSide.png",
-    "https://pocketyoga.com/assets/images/full/Chair.png",  
-    "https://pocketyoga.com/assets/images/full/ChairTwistBindUp_L.png",
-    "https://pocketyoga.com/assets/images/full/DownwardDog.png",
-    "https://pocketyoga.com/assets/images/full/SeatedForwardBend.png",
-    "https://pocketyoga.com/assets/images/full/HeadstandSupported.png",
-    "https://pocketyoga.com/assets/images/full/BoundAngle.png",
-    "https://pocketyoga.com/assets/images/full/LordOfTheFishes_R.png",
-    "https://pocketyoga.com/assets/images/full/KneePileBind_L.png",
-    "https://pocketyoga.com/assets/images/full/TriangleForward_L.png",
-    "https://pocketyoga.com/assets/images/full/Bridge.png",
-    "https://pocketyoga.com/assets/images/full/Butterfly.png",
-    "https://pocketyoga.com/assets/images/full/Camel.png",
-    "https://pocketyoga.com/assets/images/full/TreePrayer_R.png",
-    "https://pocketyoga.com/assets/images/full/Corpse.png",
-    "https://pocketyoga.com/assets/images/full/GarlandSideways_L.png",
-    "https://pocketyoga.com/assets/images/full/PigeonFlying_L.png",
-    "https://pocketyoga.com/assets/images/full/ForwardBendBigToe.png",
-    "https://pocketyoga.com/assets/images/full/PigeonHalf_L.png",
-    "https://pocketyoga.com/assets/images/full/SeatedForwardBend.png",
-    "https://pocketyoga.com/assets/images/full/CorpseFrontArmsForward.png",
-    "https://pocketyoga.com/assets/images/full/LegsUpTheWallRelax.png",
-    "https://pocketyoga.com/assets/images/full/SupportedBridge.png",
-    "https://pocketyoga.com/assets/images/full/StandingForwardBend.png",
-    "https://pocketyoga.com/assets/images/full/Lunge_L.png",
-    "https://pocketyoga.com/assets/images/full/CatCow.png",
-    "https://pocketyoga.com/assets/images/full/HappyBaby.png",
-    "https://pocketyoga.com/assets/images/full/BoatFull.png",
-    "https://pocketyoga.com/assets/images/full/LowLunge_L.png"
+    "LungeCrescent_L.png",
+    "MountainArmsSide.png",
+    "Chair.png",  
+    "ChairTwistBindUp_L.png",
+    "DownwardDog.png",
+    "SeatedForwardBend.png",
+    "HeadstandSupported.png",
+    "BoundAngle.png",
+    "LordOfTheFishes_R.png",
+    "KneePileBind_L.png",
+    "TriangleForward_L.png",
+    "Bridge.png",
+    "Butterfly.png",
+    "Camel.png",
+    "TreePrayer_R.png",
+    "Corpse.png",
+    "GarlandSideways_L.png",
+    "PigeonFlying_L.png",
+    "ForwardBendBigToe.png",
+    "PigeonHalf_L.png",
+    "SeatedForwardBend.png",
+    "CorpseFrontArmsForward.png",
+    "LegsUpTheWallRelax.png",
+    "SupportedBridge.png",
+    "StandingForwardBend.png",
+    "Lunge_L.png",
+    "CatCow.png",
+    "HappyBaby.png",
+    "BoatFull.png",
+    "LowLunge_L.png"
   ];
+  const imgBaseUrl = "https://pocketyoga.com/assets/images/full/";
 
-  const images = []; //ToDo: add actual images data in base64 encoded format in future version.
+  const imgDataUrls = []; //ToDo: add actual images data in base64 encoded format in future version.
+  
+  for (let i=0; i<imageUrls.length; i++) {
+      let imgName = imageUrls[i];
+      let imageUrl = imgBaseUrl + imgName;
+      imageUrl = await imageUrl2DataUrl(imageUrl);
+      imgDataUrls.push(imageUrl);
+  }
 
   return names.map((n,i)=>({
     id: 'p'+(i+1),
     category: i<10 ? 'morning' : (i<20 ? 'stretch' : 'relax'),
     name: n,
     info: infos[i] || '',
-    imageUrl: imageUrls[i] || '',
-    imageData: images[i] || ''
+    imageUrl: imgDataUrls[i] || ''
   }));
-})();
+});
 
 /* Database in localStorage */
 let DB = { poses: [], completions: {}, reviews: [], profile: { name: '' } };
 
-function loadData(){
-  const raw = localStorage.getItem('yogaAwarenessData');
-  if(raw){
-    try { DB = JSON.parse(raw); }
-    catch(e){ DB = { poses: seedPoses.slice(), completions: {}, reviews: [], profile: { name: '' } }; saveData(); }
-  } else {
-    DB.poses = seedPoses.slice();
+async function loadData(){
+  //const raw = localStorage.getItem('yogaAwarenessData');
+  //if(raw){
+  //  try { DB = JSON.parse(raw); }
+  //  catch(e){ DB = { poses: seedPoses(), completions: {}, reviews: [], profile: { name: '' } }; saveData(); }
+  //} else {
+    DB.poses = await seedPoses();
     DB.completions = {}; DB.reviews = []; DB.profile = { name: '' };
     saveData();
-  }
+  //}
 }
-function saveData(){ localStorage.setItem('yogaAwarenessData', JSON.stringify(DB)); }
+function saveDataOriginal(){ localStorage.setItem('yogaAwarenessData', JSON.stringify(DB)); }
+function saveData(){  }
 
 /* Render Home - only names & info (no images) */
 function renderHome(){
@@ -178,7 +187,7 @@ function addToToday(poseId){
 function renderSession(){
   const list = getTodaysSession();
   const container = q('#sessionList'); container.innerHTML = '';
-  list.forEach(p => {
+  list.forEach(async p => {
     const row = document.createElement('div'); row.className = 'card';
     const checked = DB.completions[todayISO()]?.donePoses?.includes(p.id) ? 'checked' : '';
     row.innerHTML = `
@@ -196,6 +205,7 @@ function renderSession(){
     `;
     container.appendChild(row);
   });
+
   // wire checkboxes after injecting them
   qq('.poseCheck').forEach(cb=>{
     cb.onchange = ()=>{
@@ -306,15 +316,67 @@ q('#addPoseBtn').onclick = ()=>{
   const cat = q('#poseCategory').value;
   const info = q('#poseInfo').value.trim() || '';
   if(!name){ alert('Give a name'); return; }
-  const img = q('#poseImage').files[0] || null;
+  const imgFile = q('#poseImage').files[0] || null;
   const id = 'p'+(Date.now()%1000000);
-  DB.poses.unshift({id, category: cat, name, info, imgUrl: null, img});
-  saveData();
-  alert('Pose added');
-  renderHome();
-  showPage('homePage');
+
+  if (imgFile) {
+            let dataURL = imgFile;
+            DB.poses.unshift({id, category: cat, name, info, dataURL});
+        }
 };
-q('#resetSampleBtn').onclick = ()=>{ if(confirm('Reset to original sample 30 poses?')){ DB.poses = seedPoses.slice(); saveData(); renderHome(); } };
+q('#resetSampleBtn').onclick = ()=>{ if(confirm('Reset to original sample 30 poses?')){ resetData(); } };
+
+async function resetData() {
+  DB.poses = (await seedPoses()).slice(); 
+  saveData(); 
+  renderHome();
+}
+
+async function imageUrl2DataUrl(imageUrl) {
+  imageUrl = 'images/LungeCrescent_L.png';
+
+ var toothPaste = new Promise((resolve, reject) => {
+    const canvas = q('#image-canvas');
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+    img.onerror = (error) => reject(error);
+    img.onload = () => {
+        // Draw the image on the hidden canvas
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.drawImage(img, 0, 0);
+        let dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+        resolve(dataUrl);
+    };
+    img.src = imageUrl;
+      
+    });
+
+  return await toothPaste;
+  /*
+    const canvas = q('#image-canvas');
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+    img.onload = () => {
+        // Draw the image on the hidden canvas
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.drawImage(img, 0, 0);
+        let dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+        // Store the data URL to be saved later
+        resolve(dataUrl);
+    };
+    img.onerror = (error) => reject(error);
+    img.src = imageUrl;
+          const reader = new FileReader();
+        reader.onloadend = () => {
+          // The reader.result contains the data: URL
+          return reader.result;
+        };
+        reader.readAsDataURL(dataURL);
+
+  */
+}
 
 /* Analysis (reviews & stats) */
 function renderAnalysis(){
@@ -403,7 +465,11 @@ q('#navAnalysis').onclick = ()=> showPage('analysisPage');
 q('#uploadNavBtn').onclick = ()=> showPage('uploadPage');
 
 /* Initialize */
-loadData();
-showPage('homePage');
-renderCalendar();
-renderAnalysis();
+async function initializeApp() {
+  await loadData();
+  showPage('homePage');
+  renderCalendar();
+  renderAnalysis();
+}
+
+initializeApp();
