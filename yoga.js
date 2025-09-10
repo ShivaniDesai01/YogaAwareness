@@ -86,7 +86,7 @@ const seedPoses = (async ()=>{
     "WarriorIKneeling_L.png"
   ];
 
-  const imgDataUrls = []; //ToDo: add actual images data in base64 encoded format in future version.
+  const imgDataUrls = []; //Array to store images data in base64 encoded format.
   
   for (let i=0; i<imageUrls.length; i++) {
       let imgName = imageUrls[i];
@@ -318,12 +318,33 @@ q('#addPoseBtn').onclick = ()=>{
   if(!name){ alert('Give a name'); return; }
   const imgFile = q('#poseImage').files[0] || null;
   const id = 'p'+(Date.now()%1000000);
+  const canvas = document.getElementById('image-canvas');
+  const ctx = canvas.getContext('2d');
 
   if (imgFile) {
-            let dataURL = imgFile;
-            DB.poses.unshift({id, category: cat, name, info, dataURL});
-        }
+      const reader = new FileReader();
+      reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+              // Draw the image on the hidden canvas
+              canvas.width = img.width;
+              canvas.height = img.height;
+              ctx.drawImage(img, 0, 0);
+
+              // Store the data URL to be saved later
+              let dataURL = canvas.toDataURL('image/jpeg', 0.9);
+              //Insert newly added element at first position
+              DB.poses.unshift({id, category: cat, name, info, imageUrl: dataURL});
+              //Remove the last element from array to maintain total 5 elements count
+              DB.poses.pop();
+              alert('New pose added successfully');
+          };
+          img.src = e.target.result;
+      };
+      reader.readAsDataURL(imgFile);
+  }
 };
+
 q('#resetSampleBtn').onclick = ()=>{ if(confirm('Reset to original sample 30 poses?')){ resetData(); } };
 
 async function resetData() {
