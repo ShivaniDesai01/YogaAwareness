@@ -327,8 +327,8 @@ q('#addPoseBtn').onclick = ()=>{
 q('#resetSampleBtn').onclick = ()=>{ if(confirm('Reset to original sample 30 poses?')){ resetData(); } };
 
 async function resetData() {
-  DB.poses = (await seedPoses()).slice(); 
-  saveData(); 
+  //DB.poses = (await seedPoses()).slice(); 
+  await loadData();
   renderHome();
 }
 
