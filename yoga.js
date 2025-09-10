@@ -2,7 +2,8 @@
 const q = (s, el=document) => el.querySelector(s);
 const qq = (s, el=document) => Array.from(el.querySelectorAll(s));
 const todayISO = () => (new Date()).toISOString().slice(0,10);
-
+//const imgBaseUrl = "https://pocketyoga.com/assets/images/full/";
+const imgBaseUrl = "images/";
 
 /* Seed: 30 poses (no images) */
 const seedPoses = (async ()=>{
@@ -75,16 +76,15 @@ const seedPoses = (async ()=>{
     "PigeonHalf_L.png",
     "SeatedForwardBend.png",
     "CorpseFrontArmsForward.png",
-    "LegsUpTheWallRelax.png",
-    "SupportedBridge.png",
-    "StandingForwardBend.png",
+    "ShoulderstandSupported.png",
+    "HeadstandTripod.png",
+    "ForwardBend.png",
     "Lunge_L.png",
-    "CatCow.png",
-    "HappyBaby.png",
+    "Cat.png",
+    "BlissfulBaby.png",
     "BoatFull.png",
-    "LowLunge_L.png"
+    "WarriorIKneeling_L.png"
   ];
-  const imgBaseUrl = "https://pocketyoga.com/assets/images/full/";
 
   const imgDataUrls = []; //ToDo: add actual images data in base64 encoded format in future version.
   
@@ -333,9 +333,8 @@ async function resetData() {
 }
 
 async function imageUrl2DataUrl(imageUrl) {
-  imageUrl = 'images/LungeCrescent_L.png';
 
- var toothPaste = new Promise((resolve, reject) => {
+  var toothPaste = new Promise((resolve, reject) => {
     const canvas = q('#image-canvas');
     const ctx = canvas.getContext('2d');
     const img = new Image();
